@@ -117,8 +117,24 @@
 			"revisionTime": "2017-02-07T22:24:14Z"
 		},
 		{
+			"checksumSHA1": "JTNuX0hBzi+Zdet41T36K/r129M=",
+			"path": "github.com/emicklei/go-restful",
+			"revision": "371e2e97d294f258c59be5b2522958ce20ff461a",
+			"revisionTime": "2017-02-11T12:39:45Z"
+		},
+		{
+			"checksumSHA1": "3xWz4fZ9xW+CfADpYoPFcZCYJ4E=",
+			"path": "github.com/emicklei/go-restful/log",
+			"revision": "371e2e97d294f258c59be5b2522958ce20ff461a",
+			"revisionTime": "2017-02-11T12:39:45Z"
+		},
+		{
+			"checksumSHA1": "2OofLhHRnS/xkDiAjKvn7LmY228=",
 			"path": "github.com/emicklei/go-restful/swagger",
-			"revision": ""
+			"revision": "777bb3f19bcafe2575ffb2a3e46af92509ae9594",
+			"revisionTime": "2015-11-26T14:56:26Z",
+			"version": "v1.2",
+			"versionExact": "v1.2"
 		},
 		{
 			"checksumSHA1": "muGVyM8mY3/gcap6kr4Ib3F5Xn4=",
