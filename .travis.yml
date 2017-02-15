@@ -1,0 +1,16 @@
+language: go
+
+go:
+  - 1.6
+  - 1.7
+  - master
+
+script:
+  - go test -v .
+
+matrix:
+  allow_failures:
+    - go: master
+
+git:
+  depth: 10
