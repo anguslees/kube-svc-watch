@@ -251,6 +251,12 @@
 			"revisionTime": "2016-04-24T11:30:07Z"
 		},
 		{
+			"checksumSHA1": "oNrSJkPTYsPtwH9/pUXOTIjVuks=",
+			"path": "github.com/nlopes/slack",
+			"revision": "6519657c021b7add19c4ef48220140cca0b1657b",
+			"revisionTime": "2017-02-11T11:26:27Z"
+		},
+		{
 			"checksumSHA1": "qj7IAU2RRq99oaIEGH0eLfX/UcM=",
 			"path": "github.com/opencontainers/go-digest",
 			"revision": "aa2ec055abd10d26d539eb630a92241b781ce4bc",
@@ -369,6 +375,12 @@
 			"path": "golang.org/x/net/trace",
 			"revision": "236b8f043b920452504e263bc21d354427127473",
 			"revisionTime": "2017-02-06T03:21:01Z"
+		},
+		{
+			"checksumSHA1": "7EZyXN0EmZLgGxZxK01IJua4c8o=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "61557ac0112b576429a0df080e1c2cef5dfbb642",
+			"revisionTime": "2017-01-26T11:54:58Z"
 		},
 		{
 			"checksumSHA1": "Zt7DIRCaUg5qfhfxyR1wCA+EjCE=",
