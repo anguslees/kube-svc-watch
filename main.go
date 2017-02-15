@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/nlopes/slack"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/client-go/1.5/kubernetes"
@@ -24,6 +25,9 @@ const (
 var (
 	kubeconfig = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file, otherwise assume running in-cluster.")
 	listenAddr = flag.String("listen-address", ":8080", "Address to listen on for HTTP requests.")
+	terminate = flag.Bool("terminate", false, "Terminate public services immediately.")
+	slackToken = flag.String("slack-token", "", "Slack API token to send notifications.")
+	slackChan = flag.String("slack-channel", "", "Slack channel to notify when terminating services.")
 )
 
 var (
@@ -69,6 +73,69 @@ func isInternal(svc *v1.Service) bool {
 		svc.Annotations[lbInternal] == lbInternalValue
 }
 
+func terminator(client kubernetes.Interface, notify func(svc *v1.Service)) {
+	fifo := cache.NewFIFO(cache.MetaNamespaceKeyFunc)
+	cache.NewReflector(
+		cache.NewListWatchFromClient(client.Core().GetRESTClient(), "services", api.NamespaceAll, nil),
+		&v1.Service{},
+		fifo,
+		0,
+	).Run()
+
+	for {
+		item, err := fifo.Pop(func(item interface{}) error {
+			svc := item.(*v1.Service)
+			if isInternal(svc) {
+				return nil
+			}
+
+			// Delete doesn't support a ResourceVersion
+			// check for some reason, so it is
+			// theoretically possible for someone to
+			// modify the Service to use an internal LB,
+			// and *then* for our Delete to kill them.
+			// The UID check at least makes sure we don't
+			// kill the wrong incarnation of a Service
+			// across delete-recreate.
+			opts := api.DeleteOptions {
+				Preconditions: &api.Preconditions{
+					UID: &svc.UID,
+				},
+			}
+			err := client.Core().Services(svc.Namespace).Delete(svc.Name, &opts)
+			if err != nil {
+				return cache.ErrRequeue{err}
+			}
+			return nil
+		})
+
+		svc := item.(*v1.Service)
+		if isInternal(svc) {
+			if err != nil {
+				log.Printf("Error deleting %s/%s: %s\n", svc.Namespace, svc.Name, err)
+				continue
+			}
+			log.Printf("Deleted external service %s/%s\n", svc.Namespace, svc.Name)
+			notify(svc)
+		}
+	}
+}
+
+func notifySlack(svc *v1.Service) {
+	if *slackToken == "" {
+		return
+	}
+
+	slackApi := slack.New(*slackToken)
+	params := slack.PostMessageParameters{}
+	chanId, timestamp, err := slackApi.PostMessage(*slackChan, "Cool story bro: kube-svc-watch just deleted a public Service (%s/%s)! kthxbye.", params)
+	if err != nil {
+		log.Printf("Error posting to slack channel %s: %s\n", *slackChan, err)
+		return
+	}
+	log.Printf("Sent notification to channel %s at %s\n", chanId, timestamp)
+}
+
 func main() {
 	flag.Parse()
 
@@ -86,6 +153,11 @@ func main() {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
+	}
+
+	if *terminate {
+		log.Printf("Termination mode engaged\n")
+		go terminator(clientset, notifySlack)
 	}
 
 	store := cache.NewStore(cache.MetaNamespaceKeyFunc)
