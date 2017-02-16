@@ -1,4 +1,6 @@
-FROM busybox:1.26.2-uclibc
+FROM alpine:3.5
+
+RUN apk --update add ca-certificates && rm -rf /var/cache/apk/*
 
 COPY kube-svc-watch /usr/local/bin/
 
