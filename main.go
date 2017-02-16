@@ -110,7 +110,7 @@ func terminator(client kubernetes.Interface, notify func(svc *v1.Service)) {
 		})
 
 		svc := item.(*v1.Service)
-		if isInternal(svc) {
+		if !isInternal(svc) {
 			if err != nil {
 				log.Printf("Error deleting %s/%s: %s\n", svc.Namespace, svc.Name, err)
 				continue
