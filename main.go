@@ -127,13 +127,13 @@ func notifySlack(svc *v1.Service) {
 	}
 
 	slackApi := slack.New(*slackToken)
-	params := slack.PostMessageParameters{}
-	chanId, timestamp, err := slackApi.PostMessage(*slackChan, "Cool story bro: kube-svc-watch just deleted a public Service (%s/%s)! kthxbye.", params)
+	msg := fmt.Sprintf("Cool story bro: kube-svc-watch just deleted a public Service (%s/%s)! kthxbye.", svc.Namespace, svc.Name)
+	chanId, timestamp, err := slackApi.PostMessage(*slackChan, msg, slack.PostMessageParameters{})
 	if err != nil {
-		log.Printf("Error posting to slack channel %s: %s\n", *slackChan, err)
+		log.Printf("Error posting to slack %s: %s\n", *slackChan, err)
 		return
 	}
-	log.Printf("Sent notification to channel %s at %s\n", chanId, timestamp)
+	log.Printf("Sent notification to slack %s (%s) at %s\n", *slackChan, chanId, timestamp)
 }
 
 func main() {
