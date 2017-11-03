@@ -168,13 +168,13 @@ func main() {
 		go terminator(clientset, notifySlack)
 	}
 
-  if *provider == "aws" {
-    log.Printf("Using AWS provider\n")
-  } else if *provider == "gcp" {
-    log.Printf("Using GCP provider\n")
-  } else {
-    panic("unknown provider specified")
-  }
+	if *provider == "aws" {
+		log.Printf("Using AWS provider\n")
+	} else if *provider == "gcp" {
+		log.Printf("Using GCP provider\n")
+	} else {
+		panic("unknown provider specified")
+	}
 
 	store := cache.NewStore(cache.MetaNamespaceKeyFunc)
 
