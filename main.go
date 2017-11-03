@@ -18,8 +18,10 @@ import (
 )
 
 const (
-	lbInternal = "service.beta.kubernetes.io/aws-load-balancer-internal"
-	lbInternalValue = "0.0.0.0/0"
+	awsLbInternal = "service.beta.kubernetes.io/aws-load-balancer-internal"
+	awsLbInternalValue = "0.0.0.0/0"
+	gcpLbInternal = "cloud.google.com/load-balancer-type"
+	gcpLbInternalValue = "internal"
 )
 
 var (
@@ -28,6 +30,7 @@ var (
 	terminate = flag.Bool("terminate", false, "Terminate public services immediately.")
 	slackToken = flag.String("slack-token", "", "Slack API token to send notifications.")
 	slackChan = flag.String("slack-channel", "", "Slack channel to notify when terminating services.")
+	provider = flag.String("provider", "aws", "Cloud provider that is being used (aws or gcp)")
 )
 
 var (
@@ -69,8 +72,13 @@ func (c svcCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func isInternal(svc *v1.Service) bool {
-	return svc.Spec.Type != v1.ServiceTypeLoadBalancer ||
-		svc.Annotations[lbInternal] == lbInternalValue
+	if *provider == "aws" {
+		return svc.Spec.Type != v1.ServiceTypeLoadBalancer ||
+			svc.Annotations[awsLbInternal] == awsLbInternalValue
+	} else {
+		return svc.Spec.Type != v1.ServiceTypeLoadBalancer ||
+			svc.Annotations[gcpLbInternal] == gcpLbInternalValue
+	}
 }
 
 func terminator(client kubernetes.Interface, notify func(svc *v1.Service)) {
@@ -159,6 +167,14 @@ func main() {
 		log.Printf("Termination mode engaged\n")
 		go terminator(clientset, notifySlack)
 	}
+
+  if *provider == "aws" {
+    log.Printf("Using AWS provider\n")
+  } else if *provider == "gcp" {
+    log.Printf("Using GCP provider\n")
+  } else {
+    panic("unknown provider specified")
+  }
 
 	store := cache.NewStore(cache.MetaNamespaceKeyFunc)
 
