@@ -28,6 +28,7 @@ var (
 	terminate = flag.Bool("terminate", false, "Terminate public services immediately.")
 	slackToken = flag.String("slack-token", "", "Slack API token to send notifications.")
 	slackChan = flag.String("slack-channel", "", "Slack channel to notify when terminating services.")
+	clusterId = flag.String("cluster-id", "k8s", "Id of the cluster. Shown on slack alerts.")
 )
 
 var (
@@ -127,7 +128,7 @@ func notifySlack(svc *v1.Service) {
 	}
 
 	slackApi := slack.New(*slackToken)
-	msg := fmt.Sprintf("Cool story bro: kube-svc-watch just deleted a public Service (%s/%s)! kthxbye.", svc.Namespace, svc.Name)
+	msg := fmt.Sprintf("Cool story bro: kube-svc-watch just deleted a public Service (%s/%s/%s)! kthxbye.", *clusterId, svc.Namespace, svc.Name)
 	chanId, timestamp, err := slackApi.PostMessage(*slackChan, msg, slack.PostMessageParameters{})
 	if err != nil {
 		log.Printf("Error posting to slack %s: %s\n", *slackChan, err)
